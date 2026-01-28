@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  TITLE <title>The Squad Vault</title>
+  <title>The Squad Vault</title>
   <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1/lib/index.iife.min.js"></script>
   <style>
     * {
@@ -71,44 +71,11 @@
       word-break: break-all;
     }
 
-    #recent {
-      margin-top: 50px;
-      text-align: left;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #00ff88;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    #recent h2 {
-      color: #00ff88;
-      text-shadow: 0 0 15px #00ff88;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    ul {
-      list-style: none;
-      padding: 0;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    li {
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(0, 255, 136, 0.3);
-      word-break: break-word;
-    }
-
     @media (max-width: 768px) {
       h1 { font-size: 2.4em; }
       #balance { font-size: 2.4em; }
       p { font-size: 1.1em; }
       #content { padding: 40px 20px; }
-      #recent { max-width: 100%; padding: 15px; }
     }
   </style>
 </head>
@@ -117,16 +84,11 @@
 
   <div id="content">
     <h1>The Squad Vault</h1>
-    <p>Squad USDC vault for the chat. Send via wallet</p>
+    <p>Squad solana vault for the chat. Send via wallet</p>
 
     <p>Vault Address: <code id="address">Loading...</code></p>
 
-    <div id="balance">Vault Size: Loading...</div>
-
-    <div id="recent">
-      <h2>Recent Deposits</h2>
-      <ul id="txList"><li>Loading...</li></ul>
-    </div>
+    <div id="balance">Vault Size: Loading... SOL</div>
   </div>
 
   <script>
@@ -167,100 +129,23 @@
       drops = Array(Math.floor(columns)).fill(1);
     });
 
-    // Vault Functionality - shows both SOL and USDC balances
+    // Vault Functionality - SOL balance only
     const walletAddress = "2etUEjDx6BuRpC1fSKf2uFVReR9jCZ5QaF3hUABp1mc1";
 
     document.getElementById("address").textContent = walletAddress;
 
-    const RPCS = [
-      "https://rpc.ankr.com/solana",
-      "https://solana-mainnet.core.chainstack.com",
-      "https://solana-api.projectserum.com",
-      "https://api.mainnet-beta.solana.com"
-    ];
-    let currentRpcIndex = 0;
-
-    function getConnection() {
-      return new solanaWeb3.Connection(RPCS[currentRpcIndex]);
-    }
-
-    const USDC_MINT = new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana");
     const LAMPORTS_PER_SOL = 1000000000;
-
-    let usdcTokenAccount = null;
 
     async function updateVault() {
       try {
-        let connection = getConnection();
-
-        // SOL balance (native)
         const solBalanceLamports = await connection.getBalance(new solanaWeb3.PublicKey(walletAddress));
         const solBalance = solBalanceLamports / LAMPORTS_PER_SOL;
 
-        // USDC balance
-        if (!usdcTokenAccount) {
-          const tokenAccounts = await connection.getTokenAccountsByOwner(new solanaWeb3.PublicKey(walletAddress), { mint: USDC_MINT });
-          if (tokenAccounts.value.length > 0) usdcTokenAccount = tokenAccounts.value[0].pubkey;
-        }
-
-        let usdcBalance = 0;
-        if (usdcTokenAccount) {
-          const info = await connection.getTokenAccountBalance(usdcTokenAccount);
-          usdcBalance = parseFloat(info.value.uiAmount || 0);
-        }
-
-        // Display both
-        document.getElementById("balance").innerHTML = `
-          Vault Size:<br>
-          ${solBalance.toFixed(4)} SOL<br>
-          ${usdcBalance.toFixed(2)} USDC
-        `;
-
-        // Recent deposits (USDC only)
-        const txList = document.getElementById("txList");
-        txList.innerHTML = "";
-        if (!usdcTokenAccount) {
-          txList.innerHTML = "<li>No USDC deposits yet.</li>";
-          return;
-        }
-        const signatures = await connection.getSignaturesForAddress(usdcTokenAccount, { limit: 20 });
-        if (signatures.length === 0) {
-          txList.innerHTML = "<li>No deposits yet.</li>";
-          return;
-        }
-        for (const sigInfo of signatures) {
-          const tx = await connection.getParsedTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
-          if (!tx) continue;
-
-          let change = 0;
-          const pre = tx.meta.preTokenBalances.find(b => b.accountIndex === tx.transaction.message.accountKeys.findIndex(k => k.pubkey.toBase58() === usdcTokenAccount.toBase58()));
-          const post = tx.meta.postTokenBalances.find(b => b.accountIndex === tx.transaction.message.accountKeys.findIndex(k => k.pubkey.toBase58() === usdcTokenAccount.toBase58()));
-          if (pre && post && post.uiTokenAmount.uiAmount > pre.uiTokenAmount.uiAmount) {
-            change = post.uiTokenAmount.uiAmount - pre.uiTokenAmount.uiAmount;
-          }
-          if (change <= 0) continue;
-
-          let memo = '';
-          const instructions = tx.transaction.message.instructions;
-          for (const ix of instructions) {
-            if (ix.programId.toBase58() === "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr") {
-              try {
-                memo = atob(ix.data).trim();
-                if (memo.length > 100) memo = memo.substring(0, 100) + '...';
-              } catch {}
-              break;
-            }
-          }
-
-          const li = document.createElement("li");
-          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}`;
-          txList.appendChild(li);
-        }
+        document.getElementById("balance").textContent = `Vault Size: ${solBalance.toFixed(4)} SOL`;
       } catch (e) {
-        console.error("RPC error, switching endpoint...", e);
-        currentRpcIndex = (currentRpcIndex + 1) % RPCS.length;
-        document.getElementById("balance").innerHTML = "Vault Size: Loading... (retrying RPC)";
-        setTimeout(updateVault, 5000);
+        console.error(e);
+        document.getElementById("balance").textContent = "Vault Size: Error loading (refresh)";
       }
     }
     updateVault();
