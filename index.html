@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Squad Vault</title>
+  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1/lib/index.iife.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      font-family: monospace;
+      color: #00ff88;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    #rain-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    #content {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      width: 90%;
+      margin: 0 auto;
+      padding: 60px 20px;
+      text-align: center;
+      background: rgba(0, 0, 0 
+      , 0.5);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-size: 3.2em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 15px #00ff88;
+    }
+
+    p {
+      font-size: 1.3em;
+      margin-bottom: 30px;
+    }
+
+    #balance {
+      font-size: 3em;
+      font-weight: bold;
+      margin: 30px 0;
+      text-shadow: 0 0 20px #00ff88;
+    }
+
+    code {
+      background: rgba(0, 255, 136, 0.1);
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: 1px solid #00ff88;
+      font-size: 1.1em;
+      word-break: break-all;
+    }
+
+    #recent {
+      margin-top: 50px;
+      text-align: left;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #00ff88;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #recent h2 {
+      color: #00ff88;
+      text-shadow: 0 0 15px #00ff88;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    li {
+      padding: 10px 0;
+      border929-bottom: 1px solid rgba(0, 255, 136, 0.3);
+      word-break: break-word;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.4em; }
+      #balance { font-size: 2.4em; }
+      p { font-size: 1.1em; }
+      #content { padding: 40px 20px; }
+      #recent { max-width: 100%; padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="rain-canvas"></canvas>
+
+  <div id="content">
+    <h1>The Squad Vault</h1>
+    <p>Squad USDC vault for the chat. Send via wallet</p>
+
+    <p>Vault Address: <code id="address">Loading...</code></p>
+
+    <div id="balance">Vault Size: Loading... USDC</div>
+
+    <div id="recent">
+      <h2>Recent Deposits</h2>
+      <ul id="txList"><li>Loading...</li></ul>
+    </div>
+  </div>
+
+  <script>
+    // Matrix Rain
+    const rainCanvas = document.getElementById('rain-canvas');
+    const ctx = rainCanvas.getContext('2d');
+    rainCanvas.width = window.innerWidth;
+    rainCanvas.height = window.innerHeight;
+
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:\'",.<>?/～!！@#￥%……&*（）——+【】｛｝；：＂＇，。、《》？';
+    const fontSize = 14;
+    const columns = rainCanvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function drawRain() {
+      ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
+      ctx.fillRect(0, 0, rainCanvas.width, rainCanvas.height);
+
+      ctx.fillStyle = '#00ff88';
+      ctx.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > rainCanvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    }
+
+    setInterval(drawRain, 45);
+
+    window.addEventListener('resize', () => {
+      rainCanvas.width = window.innerWidth;
+      rainCanvas.height = window.innerHeight;
+    });
+
+    // Vault Functionality
+    const walletAddress = "2etUEjDx6BuRpC1fSKf2uFVReR9jCZ5QaF3hUABp1mc1";
+
+    document.getElementById("address").textContent = walletAddress;
+
+    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com");
+    const USDC_MINT = new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+
+    let usdcTokenAccount = null;
+
+    async function updateVault() {
+      try {
+        if (!usdcTokenAccount) {
+          const tokenAccounts = await connection.getTokenAccountsByOwner(new solanaWeb3.PublicKey(walletAddress), { mint: USDC_MINT });
+          if (tokenAccounts.value.length > 0) usdcTokenAccount = tokenAccounts.value[0].pubkey;
+        }
+
+        let balance = 0;
+        if (usdcTokenAccount) {
+          const info = await connection.getTokenAccountBalance(usdcTokenAccount);
+          balance = parseFloat(info.value.uiAmount || 0);
+        }
+        document.getElementById("balance").textContent = `Vault Size: ${balance.toFixed(2)} USDC`;
+
+        const txList = document.getElementById("txList");
+        txList.innerHTML = "";
+        if (!usdcTokenAccount) {
+          txList.innerHTML = "<li>No USDC account detected yet.</li>";
+          return;
+        }
+        const signatures = await connection.getSignaturesForAddress(usdcTokenAccount, { limit: 20 });
+        if (signatures.length === 0) {
+          txList.innerHTML = "<li>No deposits yet.</li>";
+          return;
+        }
+        for (const sigInfo of signatures) {
+          const tx = await connection.getParsedTransaction(sigInfo.signature, { maxSupportedTransactionVersion: 0 });
+          if (!tx) continue;
+
+          let change = 0;
+          const pre = tx.meta.preTokenBalances.find(b => b.accountIndex === tx.transaction.message.accountKeys.findIndex(k => k.pubkey.toBase58() === usdcTokenAccount.toBase58()));
+          const post = tx.meta.postTokenBalances.find(b => b.accountIndex === tx.transaction.message.accountKeys.findIndex(k => k.pubkey.toBase58() === usdcTokenAccount.toBase58()));
+          if (pre && post && post.uiTokenAmount.uiAmount > pre.uiTokenAmount.uiAmount) {
+            change = post.uiTokenAmount.uiAmount - pre.uiTokenAmount.uiAmount;
+          }
+          if (change <= 0) continue;
+
+          let memo = '';
+          const instructions = tx.transaction.message.instructions;
+          for (const ix of instructions) {
+            if (ix.programId.toBase58() === "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr") {
+              try {
+                memo = atob(ix.data).trim();
+                if (memo.length > 100) memo = memo.substring(0, 100) + '...';
+              } catch {}
+              break;
+            }
+          }
+
+          const li = document.createElement("li");
+          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}`;
+          txList.appendChild(li);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    updateVault();
+    setInterval(updateVault, 15000);
+  </script>
+</body>
+</html>
