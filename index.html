@@ -37,8 +37,7 @@
       margin: 0 auto;
       padding: 60px 20px;
       text-align: center;
-      background: rgba(0, 0, 0 
-      , 0.5);
+      background: rgba(0, 0, 0, 0.5);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -100,7 +99,7 @@
 
     li {
       padding: 10px 0;
-      border929-bottom: 1px solid rgba(0, 255, 136, 0.3);
+      border-bottom: 1px solid rgba(0, 255, 136, 0.3);
       word-break: break-word;
     }
 
@@ -165,12 +164,12 @@
       rainCanvas.height = window.innerHeight;
     });
 
-    // Vault Functionality
+    // Vault Functionality with reliable RPC
     const walletAddress = "2etUEjDx6BuRpC1fSKf2uFVReR9jCZ5QaF3hUABp1mc1";
 
     document.getElementById("address").textContent = walletAddress;
 
-    const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com");
+    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana"); // More reliable public RPC
     const USDC_MINT = new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
     let usdcTokenAccount = null;
@@ -225,15 +224,4 @@
           }
 
           const li = document.createElement("li");
-          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}`;
-          txList.appendChild(li);
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    updateVault();
-    setInterval(updateVault, 15000);
-  </script>
-</body>
-</html>
+          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}
