@@ -117,7 +117,7 @@
 
   <div id="content">
     <h1>The Squad Vault</h1>
-    <p>Squad USDC wallet for the chat. Send via wallet</p>
+    <p>Squad USDC vault for the chat. Send via wallet</p>
 
     <p>Vault Address: <code id="address">Loading...</code></p>
 
@@ -130,16 +130,11 @@
   </div>
 
   <script>
-    // Matrix Rain (fixed for immediate/local visibility)
+    // Matrix Rain (calm, full-screen)
     const rainCanvas = document.getElementById('rain-canvas');
     const ctx = rainCanvas.getContext('2d');
-
-    function resizeCanvas() {
-      rainCanvas.width = window.innerWidth;
-      rainCanvas.height = window.innerHeight;
-    }
-
-    resizeCanvas(); // Initial size
+    rainCanvas.width = window.innerWidth;
+    rainCanvas.height = window.innerHeight;
 
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:\'",.<>?/～!！@#￥%……&*（）——+【】｛｝；：＂＇，。、《》？';
     const fontSize = 14;
@@ -162,27 +157,41 @@
       }
     }
 
-    drawRain(); // Initial draw on load
+    drawRain(); // Initial draw
     setInterval(drawRain, 45);
 
     window.addEventListener('resize', () => {
-      resizeCanvas();
+      rainCanvas.width = window.innerWidth;
+      rainCanvas.height = window.innerHeight;
       columns = rainCanvas.width / fontSize;
-      drops = Array(Math.floor(columns)).fill(1); // Reset drops on resize
+      drops = Array(Math.floor(columns)).fill(1);
     });
 
-    // Vault Functionality
+    // Vault Functionality with multiple RPC fallbacks + retry
     const walletAddress = "2etUEjDx6BuRpC1fSKf2uFVReR9jCZ5QaF3hUABp1mc1";
 
     document.getElementById("address").textContent = walletAddress;
 
-    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana");
+    const RPCS = [
+      "https://rpc.ankr.com/solana",
+      "https://solana-api.projectserum.com",
+      "https://api.mainnet-beta.solana.com",
+      "https://solana-mainnet.core.chainstack.com"
+    ];
+    let currentRpcIndex = 0;
+
+    function getConnection() {
+      return new solanaWeb3.Connection(RPCS[currentRpcIndex]);
+    }
+
     const USDC_MINT = new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
     let usdcTokenAccount = null;
 
     async function updateVault() {
       try {
+        let connection = getConnection();
+
         if (!usdcTokenAccount) {
           const tokenAccounts = await connection.getTokenAccountsByOwner(new solanaWeb3.PublicKey(walletAddress), { mint: USDC_MINT });
           if (tokenAccounts.value.length > 0) usdcTokenAccount = tokenAccounts.value[0].pubkey;
@@ -235,9 +244,10 @@
           txList.appendChild(li);
         }
       } catch (e) {
-        console.error(e);
-        document.getElementById("balance").textContent = "Vault Size: Error loading (refresh)";
-        document.getElementById("txList").innerHTML = "<li>Error loading deposits (refresh)</li>";
+        console.error("RPC error, switching endpoint...", e);
+        currentRpcIndex = (currentRpcIndex + 1) % RPCS.length;
+        document.getElementById("balance").textContent = "Vault Size: Loading... (retrying RPC)";
+        setTimeout(updateVault, 5000); // Retry sooner
       }
     }
     updateVault();
