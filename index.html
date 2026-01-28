@@ -130,7 +130,7 @@
   </div>
 
   <script>
-    // Matrix Rain
+    // Matrix Rain (full-screen, calm)
     const rainCanvas = document.getElementById('rain-canvas');
     const ctx = rainCanvas.getContext('2d');
     rainCanvas.width = window.innerWidth;
@@ -138,8 +138,8 @@
 
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()_+-=[]{}|;:\'",.<>?/～!！@#￥%……&*（）——+【】｛｝；：＂＇，。、《》？';
     const fontSize = 14;
-    const columns = rainCanvas.width / fontSize;
-    const drops = Array(Math.floor(columns)).fill(1);
+    let columns = rainCanvas.width / fontSize;
+    let drops = Array(Math.floor(columns)).fill(1);
 
     function drawRain() {
       ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
@@ -162,14 +162,16 @@
     window.addEventListener('resize', () => {
       rainCanvas.width = window.innerWidth;
       rainCanvas.height = window.innerHeight;
+      columns = rainCanvas.width / fontSize;
+      drops = Array(Math.floor(columns)).fill(1);
     });
 
-    // Vault Functionality with reliable RPC
+    // Vault Functionality
     const walletAddress = "2etUEjDx6BuRpC1fSKf2uFVReR9jCZ5QaF3hUABp1mc1";
 
     document.getElementById("address").textContent = walletAddress;
 
-    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana"); // More reliable public RPC
+    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana"); // Reliable RPC
     const USDC_MINT = new solanaWeb3.PublicKey("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 
     let usdcTokenAccount = null;
@@ -224,4 +226,17 @@
           }
 
           const li = document.createElement("li");
-          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}
+          li.textContent = `+${change.toFixed(2)} USDC ${memo ? ` - "${memo}"` : ' (anonymous)'}`;
+          txList.appendChild(li);
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById("balance").textContent = "Vault Size: Error loading (refresh)";
+        document.getElementById("txList").innerHTML = "<li>Error loading deposits (refresh)</li>";
+      }
+    }
+    updateVault();
+    setInterval(updateVault, 15000);
+  </script>
+</body>
+</html>
