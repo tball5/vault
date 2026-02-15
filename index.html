@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Squad Vault</title>
-  <script src="https://cdn.jsdelivr.net/npm/@solana/web3.js@1/lib/index.iife.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -55,13 +54,6 @@
       margin-bottom: 30px;
     }
 
-    #balance {
-      font-size: 3em;
-      font-weight: bold;
-      margin: 30px 0;
-      text-shadow: 0 0 20px #00ff88;
-    }
-
     code {
       background: rgba(0, 255, 136, 0.1);
       padding: 12px 20px;
@@ -71,11 +63,33 @@
       word-break: break-all;
     }
 
+    button {
+      padding: 14px 36px;
+      font-size: 1.4em;
+      background: transparent;
+      color: #00ff88;
+      border: 2px solid #00ff88;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 30px auto;
+      text-shadow: 0 0 15px #00ff88;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px #00ff88;
+      display: inline-block;
+    }
+
+    button:hover {
+      background: #00ff88;
+      color: #0a0a0a;
+      text-shadow: none;
+      box-shadow: 0 0 30px #00ff88;
+    }
+
     @media (max-width: 768px) {
       h1 { font-size: 2.4em; }
-      #balance { font-size: 2.4em; }
       p { font-size: 1.1em; }
       #content { padding: 40px 20px; }
+      button { font-size: 1.2em; padding: 12px 28px; }
     }
   </style>
 </head>
@@ -86,9 +100,9 @@
     <h1>The Squad Vault</h1>
     <p>Squad solana vault for the chat. Send via wallet</p>
 
-    <p>Vault Address: <code id="address">Loading...</code></p>
+    <p>Vault Address: <code>3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code></p>
 
-    <div id="balance">Vault Size: Loading... SOL</div>
+    <button onclick="window.open('https://app.squads.so/squads/3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy/home', '_blank')">View the Vault Dashboard</button>
   </div>
 
   <script>
@@ -128,29 +142,6 @@
       columns = rainCanvas.width / fontSize;
       drops = Array(Math.floor(columns)).fill(1);
     });
-
-    // Vault Functionality - SOL balance only
-    const walletAddress = "Wallet address";
-
-    document.getElementById("address").textContent = walletAddress;
-
-    const connection = new solanaWeb3.Connection("https://rpc.ankr.com/solana");
-    const LAMPORTS_PER_SOL = 1000000000;
-
-    async function updateVault() {
-      try {
-        const solBalanceLamports = await connection.getBalance(new solanaWeb3.PublicKey(walletAddress));
-        const solBalance = solBalanceLamports / LAMPORTS_PER_SOL;
-
-        document.getElementById("balance").textContent = `Vault Size: ${solBalance.toFixed(4)} SOL`;
-      } catch (e) {
-        console.error(e);
-        document.getElementById("balance").textContent = "Vault Size: Error loading (refresh)";
-      }
-    }
-    updateVault();
-    setInterval(updateVault, 15000);
   </script>
 </body>
-
 </html>
