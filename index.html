@@ -54,6 +54,15 @@
       margin-bottom: 30px;
     }
 
+    #address-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin: 40px 0;
+    }
+
     code {
       background: rgba(0, 255, 136, 0.1);
       padding: 12px 20px;
@@ -63,7 +72,32 @@
       word-break: break-all;
     }
 
-    button {
+    #copy-button {
+      padding: 12px 24px;
+      font-size: 1.2em;
+      background: transparent;
+      color: #00ff88;
+      border: 2px solid #00ff88;
+      border-radius: 8px;
+      cursor: pointer;
+      text-shadow: 0 0 12px #00ff88;
+      box-shadow: 0 0 12px #00ff88;
+      transition: all 0.3s;
+    }
+
+    #copy-button:hover {
+      background: #00ff88;
+      color: #0a0a0a;
+    }
+
+    #copy-feedback {
+      font-size: 1.1em;
+      opacity: 0;
+      transition: opacity 0.5s;
+      margin-left: 10px;
+    }
+
+    button.dashboard {
       padding: 14px 36px;
       font-size: 1.4em;
       background: transparent;
@@ -78,7 +112,7 @@
       display: inline-block;
     }
 
-    button:hover {
+    button.dashboard:hover {
       background: #00ff88;
       color: #0a0a0a;
       text-shadow: none;
@@ -89,7 +123,8 @@
       h1 { font-size: 2.4em; }
       p { font-size: 1.1em; }
       #content { padding: 40px 20px; }
-      button { font-size: 1.2em; padding: 12px 28px; }
+      #address-container { flex-direction: column; gap: 15px; }
+      button.dashboard { font-size: 1.2em; padding: 12px 28px; }
     }
   </style>
 </head>
@@ -100,9 +135,13 @@
     <h1>The Squad Vault</h1>
     <p>Squad solana vault for the chat. Send via wallet</p>
 
-    <p>Vault Address: <code>3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code></p>
+    <div id="address-container">
+      <code id="address">3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code>
+      <button id="copy-button">Copy Address</button>
+      <span id="copy-feedback">Copied ✔</span>
+    </div>
 
-    <button onclick="window.open('https://app.squads.so/squads/3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy/home', '_blank')">View the Vault Dashboard</button>
+    <button class="dashboard" onclick="window.open('https://app.squads.so/squads/3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy/home', '_blank')">View the Vault Dashboard</button>
   </div>
 
   <script>
@@ -141,6 +180,20 @@
       rainCanvas.height = window.innerHeight;
       columns = rainCanvas.width / fontSize;
       drops = Array(Math.floor(columns)).fill(1);
+    });
+
+    // Copy button
+    const copyButton = document.getElementById('copy-button');
+    const copyFeedback = document.getElementById('copy-feedback');
+    const vaultAddress = "3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy";
+
+    copyButton.addEventListener('click', () => {
+      navigator.clipboard.writeText(vaultAddress).then(() => {
+        copyFeedback.style.opacity = 1;
+        setTimeout(() => {
+          copyFeedback.style.opacity = 0;
+        }, 2000);
+      });
     });
   </script>
 </body>
