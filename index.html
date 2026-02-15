@@ -54,13 +54,22 @@
       margin-bottom: 30px;
     }
 
+    #address-section {
+      margin: 20px 0; /* Reduced spacing */
+    }
+
+    #address-label {
+      font-size: 1.4em;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px #00ff88;
+    }
+
     #address-container {
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 15px;
       flex-wrap: wrap;
-      margin: 40px 0;
     }
 
     code {
@@ -73,8 +82,8 @@
     }
 
     #copy-button {
-      padding: 8px 16px; /* Smaller padding */
-      font-size: 1.0em; /* Smaller font */
+      padding: 8px 16px;
+      font-size: 1.0em;
       background: transparent;
       color: #00ff88;
       border: 2px solid #00ff88;
@@ -122,7 +131,9 @@
       h1 { font-size: 2.4em; }
       p { font-size: 1.1em; }
       #content { padding: 40px 20px; }
-      #address-container { flex-direction: column; gap: 15px; }
+      #address-section { margin: 15px 0; }
+      #address-label { font-size: 1.2em; margin-bottom: 8px; }
+      #address-container { flex-direction: column; gap: 12px; }
       button.dashboard { font-size: 1.2em; padding: 12px 28px; }
       #copy-button { font-size: 0.9em; padding: 6px 12px; }
     }
@@ -135,11 +146,13 @@
     <h1>The Squad Vault</h1>
     <p>Squad solana vault for the chat. Send via wallet</p>
 
-    <p>Vault Address:</p>
-    <div id="address-container">
-      <code id="address">3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code>
-      <button id="copy-button">Copy</button>
-      <span id="copy-feedback">Copied ✔</span>
+    <div id="address-section">
+      <div id="address-label">Vault Address:</div>
+      <div id="address-container">
+        <code id="address">3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code>
+        <button id="copy-button">Copy</button>
+        <span id="copy-feedback">Copied ✔</span>
+      </div>
     </div>
 
     <button class="dashboard" onclick="window.open('https://app.squads.so/squads/3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy/home', '_blank')">View the Vault Dashboard</button>
