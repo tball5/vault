@@ -58,7 +58,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 20px;
+      gap: 15px;
       flex-wrap: wrap;
       margin: 40px 0;
     }
@@ -73,15 +73,15 @@
     }
 
     #copy-button {
-      padding: 12px 24px;
-      font-size: 1.2em;
+      padding: 8px 16px; /* Smaller padding */
+      font-size: 1.0em; /* Smaller font */
       background: transparent;
       color: #00ff88;
       border: 2px solid #00ff88;
       border-radius: 8px;
       cursor: pointer;
-      text-shadow: 0 0 12px #00ff88;
-      box-shadow: 0 0 12px #00ff88;
+      text-shadow: 0 0 10px #00ff88;
+      box-shadow: 0 0 10px #00ff88;
       transition: all 0.3s;
     }
 
@@ -91,10 +91,9 @@
     }
 
     #copy-feedback {
-      font-size: 1.1em;
+      font-size: 1.0em;
       opacity: 0;
       transition: opacity 0.5s;
-      margin-left: 10px;
     }
 
     button.dashboard {
@@ -125,6 +124,7 @@
       #content { padding: 40px 20px; }
       #address-container { flex-direction: column; gap: 15px; }
       button.dashboard { font-size: 1.2em; padding: 12px 28px; }
+      #copy-button { font-size: 0.9em; padding: 6px 12px; }
     }
   </style>
 </head>
@@ -135,9 +135,10 @@
     <h1>The Squad Vault</h1>
     <p>Squad solana vault for the chat. Send via wallet</p>
 
+    <p>Vault Address:</p>
     <div id="address-container">
       <code id="address">3gtctQdU2B99KecmJPb3Rj7zQnaAof8XvTeTedh5q9cy</code>
-      <button id="copy-button">Copy Address</button>
+      <button id="copy-button">Copy</button>
       <span id="copy-feedback">Copied ✔</span>
     </div>
 
